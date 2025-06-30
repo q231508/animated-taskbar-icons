@@ -1,2 +1,3 @@
-# Bad Apple on a your taskbar
-### TODO: What does it do
+# Bad Apple on the taskbar
+## TODO: 
+Table of contents:
