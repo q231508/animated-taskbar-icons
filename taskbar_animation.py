@@ -22,13 +22,16 @@ def animate(icon):
 def on_clicked(icon, item):
     # Checks if user chose an action from the menu
     # Complete one of the available actions
-    global running
+    global running, count, frames
     if str(item) == "Run":
         if not running:
             running = True
             threading.Thread(target=animate, args=(icon,), daemon=True).start()
     elif str(item) == "Stop":
         running = False
+    elif str(item) == "Restart":
+        count = 0
+        icon.icon = frames[count]
     elif str(item) == "Exit":
         running = False
         icon.stop()
@@ -42,32 +45,30 @@ def select_and_processing():
     root = tk.Tk()
     root.withdraw()
     target_file = filedialog.askopenfilename(title="Select a file") # <-- Pick an image or gif
+    root.destroy()
     if not target_file:
         print("No file selected")
         return None
 
     try:
         gif = Image.open(target_file)
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
     except UnidentifiedImageError:
         print("Invalid file selected")
         return
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
     
     print(f"Processing Frames: 0%", end='\r')
-    raw_frames = list(ImageSequence.Iterator(gif)) 
-    total = len(raw_frames)
     
-    frames = []
-    frames_processed = 1
-    for frame in ImageSequence.Iterator(gif):
+    frames.clear()
+    for i, frame in enumerate(ImageSequence.Iterator(gif)):
         processed_frame = frame.copy().convert("RGBA").resize((32, 32), Image.LANCZOS)
         frames.append(processed_frame)
-        print(f"Processing Frames: {round((frames_processed + 1) / total * 100, 2)}%", end='\r')
-        frames_processed += 1
+        percent = round((i + 1) / gif.n_frames * 100, 2)
+        print(f"Processing Frames: {percent}%", end='\r')
+
     print(f"Processing Frames: Finished!")
-    
     return(frames[0])
         
 def main():
@@ -80,6 +81,7 @@ def main():
     tray_icon = pystray.Icon("Animated_icon", icon_image, title="Animated Icon", menu=pystray.Menu(
         pystray.MenuItem("Run", on_clicked),
         pystray.MenuItem("Stop", on_clicked),
+        pystray.MenuItem("Restart", on_clicked),
         pystray.MenuItem("Exit", on_clicked)
     ))
     
