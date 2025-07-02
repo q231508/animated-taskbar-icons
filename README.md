@@ -1,3 +1,3 @@
-# Bad Apple on the taskbar
+# Animated Taskbar Icons
 ## TODO: 
 Table of contents:
