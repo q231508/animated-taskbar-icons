@@ -34,6 +34,8 @@ def on_clicked(icon, item):
         icon.stop()
 
 def select_and_processing():
+    # Selects the target file
+    # If valid, processes each frame of the file to fit on the taskbar
     global frames
     print("Select a file")
     
