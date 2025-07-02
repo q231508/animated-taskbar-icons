@@ -2,7 +2,7 @@ import threading
 import time 
 import pystray
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, simpledialog
 from PIL import Image, ImageSequence, UnidentifiedImageError
 
 running = False
@@ -18,7 +18,20 @@ def animate(icon):
         icon.icon = frames[count]
         count = (count + 1) % len(frames)
         time.sleep(1 / 48)  # <-- FPS
+        
+def ask_for_input():
+    global user_input
 
+    root = tk.Tk()
+    root.withdraw()
+    user_input = simpledialog.askstring("Input", "Please enter a value:")
+    root.destroy()
+
+    if user_input is not None:
+        print(f"User typed: {user_input}")
+    else:
+        print("User cancelled input")
+        
 def on_clicked(icon, item):
     # Checks if user chose an action from the menu
     # Complete one of the available actions
@@ -95,7 +108,9 @@ def main():
         pystray.MenuItem("Run", on_clicked),
         pystray.MenuItem("Stop", on_clicked),
         pystray.MenuItem("Change file", on_clicked),
+        pystray.MenuItem("Change speed", ask_for_input),
         pystray.MenuItem("Exit", on_clicked)
+        
     ))
     
     tray_icon.run()
