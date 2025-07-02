@@ -1,11 +1,14 @@
 import threading
 import time 
 import pystray
-from PIL import Image, ImageSequence
+import tkinter as tk
+from tkinter import filedialog
+from PIL import Image, ImageSequence, UnidentifiedImageError
 
 running = False
 count = 0
 frames = []
+tray_icon = None
 
 def animate(icon):
     # Handles the animation loop
@@ -29,15 +32,28 @@ def on_clicked(icon, item):
     elif str(item) == "Exit":
         running = False
         icon.stop()
-     
-def main():
+
+def select_and_processing():
     global frames
-    print("just a moment...")
+    print("Select a file")
+    
+    root = tk.Tk()
+    root.withdraw()
+    target_file = filedialog.askopenfilename(title="Select a file") # <-- Pick an image or gif
+    if not target_file:
+        print("No file selected")
+        return None
+
+    try:
+        gif = Image.open(target_file)
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+    except UnidentifiedImageError:
+        print("Invalid file selected")
+        return
+    
     print(f"Processing Frames: 0%", end='\r')
-    
-    target_file = "bad_apple.gif" # <-- Provide filename, or path to file 
-    gif = Image.open(target_file)
-    
     raw_frames = list(ImageSequence.Iterator(gif)) 
     total = len(raw_frames)
     
@@ -49,16 +65,23 @@ def main():
         print(f"Processing Frames: {round((frames_processed + 1) / total * 100, 2)}%", end='\r')
         frames_processed += 1
     print(f"Processing Frames: Finished!")
-
-    icon_image = frames[0] # <-- Icon thumbnail is the first frame of the provided file
     
-    icon = pystray.Icon("Animated_icon", icon_image, title="Bad apple", menu=pystray.Menu(
+    return(frames[0])
+        
+def main():
+    global tray_icon
+    
+    icon_image = select_and_processing() # <-- Icon thumbnail is the first frame of the provided file
+    if icon_image is None:
+        return
+    
+    tray_icon = pystray.Icon("Animated_icon", icon_image, title="Animated Icon", menu=pystray.Menu(
         pystray.MenuItem("Run", on_clicked),
         pystray.MenuItem("Stop", on_clicked),
         pystray.MenuItem("Exit", on_clicked)
     ))
     
-    icon.run()
+    tray_icon.run()
     
 if __name__ == "__main__":
     main()
